@@ -1,11 +1,15 @@
-from SPARQLWrapper import JSON, SPARQLWrapper
+import os
+from dotenv import load_dotenv
+from SPARQLWrapper import JSON, SPARQLWrapper, BASIC
 from django.shortcuts import render
 from django.http import JsonResponse
 
-sparql = SPARQLWrapper(
-    "http://localhost:7200/repositories/tk-final"
-)
+load_dotenv()
 
+sparql = SPARQLWrapper(os.getenv("GRAPHDB_REPO_URL"))
+
+sparql.setCredentials(os.getenv("GRAPHDB_USER"), os.getenv("GRAPHDB_PASSWORD"))
+sparql.setHTTPAuth(BASIC)
 sparql.setReturnFormat(JSON)
 
 
