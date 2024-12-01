@@ -10,6 +10,7 @@ sparql.setReturnFormat(JSON)
 
 
 def show_main(request):
+    # Taro query sparqlnya disini
     sparql.setQuery("""
         select * where {
             ?s ?p ?o .
