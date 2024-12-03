@@ -6,3 +6,5 @@ requests
 urllib3
 SPARQLWrapper
 python-dotenv
+fuzzywuzzy
+python-Levenshtein

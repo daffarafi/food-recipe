@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-9s(f17wn8z@cc*mnu%5qya65w1p4q)jl@r+%yat07t8d7r-t^=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["food-recipe.up.railway.app"]
+ALLOWED_HOSTS = ["food-recipe.up.railway.app", "127.0.0.1"]
 
 
 # Application definition
@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'main'
+    'main',
+    'search',
+    'recipe',
 ]
 
 MIDDLEWARE = [
