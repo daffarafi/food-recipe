@@ -102,8 +102,6 @@ def recipe_detail_view(request, recipe_name):
     # Convert recipes to a list
     recipe_list = list(recipes.values())
 
-    print(recipe_list[0]['ingredients'])
-
     context = {
         'recipes': recipe_list
     }
