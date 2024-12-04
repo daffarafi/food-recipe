@@ -28,7 +28,7 @@ def get_all_titles():
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX vocab: <https://food-recipe.up.railway.app/vocab#>
 
-    SELECT (COUNT(DISTINCT ?recipe) AS ?recipeCount) ?title
+    SELECT ?title
     WHERE {
         ?recipe rdfs:label ?title .
     }

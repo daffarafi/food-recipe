@@ -1,5 +1,5 @@
 {% extends 'base.html' %} {% block content %}
-<div class="container mx-auto p-4">
+<div class="container mx-auto p-4 relative top-20">
   <div class="mb-6">
     <form action="{% url 'search' %}" method="get" class="max-w-md mx-auto">
       <div class="flex">
@@ -31,7 +31,7 @@
         <p>Cuisine: {{ result.cuisine.value }}</p>
         {% endif %} {% if result.prepTime and result.cookTime %}
         <p>
-          Prep Time: {{ result.prepTime.value }} min | Cook Time: 
+          Prep Time: {{ result.prepTime.value }} min | Cook Time:
           {{ result.cookTime.value }} min
         </p>
         {% endif %} {% if result.rating %}
@@ -55,7 +55,7 @@
       <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Previous</span>
       {% endif %}
 
-      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of 
+      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of
         {{ results.paginator.num_pages }}</span>
 
       {% if results.has_next %}
@@ -72,7 +72,7 @@
   {% endif %} {% else %}
   <p class="text-gray-600">No results found for "{{ query }}"</p>
   {% endif %} {% if suggestion %}
-  <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mt-4" role="alert">
+  <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative z-10 mt-4" role="alert">
     <p>
       Did you mean:
       <a href="{% url 'search' %}?q={{ suggestion|urlencode }}" class="underline">
