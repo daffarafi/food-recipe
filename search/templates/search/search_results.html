@@ -31,8 +31,8 @@
         <p>Cuisine: {{ result.cuisine.value }}</p>
         {% endif %} {% if result.prepTime and result.cookTime %}
         <p>
-          Prep Time: {{ result.prepTime.value }} min | Cook Time: {{
-          result.cookTime.value }} min
+          Prep Time: {{ result.prepTime.value }} min | Cook Time: 
+          {{ result.cookTime.value }} min
         </p>
         {% endif %} {% if result.rating %}
         <p>Rating: {{ result.rating.value }}/5</p>
@@ -55,8 +55,8 @@
       <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Previous</span>
       {% endif %}
 
-      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of {{
-        results.paginator.num_pages }}</span>
+      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of 
+        {{ results.paginator.num_pages }}</span>
 
       {% if results.has_next %}
       <a href="?q={{ query|urlencode }}&page={{ results.next_page_number }}"
