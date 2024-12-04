@@ -9,6 +9,7 @@ import re
 
 load_dotenv()
 
+
 class WikidataIngredientService:
     @classmethod
     async def batch_query_ingredients(cls, ingredients):
@@ -23,13 +24,19 @@ class WikidataIngredientService:
             PREFIX wd: <http://www.wikidata.org/entity/>
             PREFIX schema: <http://schema.org/>
 
-            SELECT DISTINCT ?label ?wikidataItem ?url
+            SELECT DISTINCT ?label ?wikidataItem ?url ?itemImage ?itemDescription
             WHERE {{
                 VALUES ?label {{ 
-                    {" ".join(f'"{ingredient}"@id "{ingredient}"@en' for ingredient in ingredients)} 
+                    {" ".join(
+                f'"{ingredient}"@id "{ingredient}"@en' for ingredient in ingredients)}
                 }}
                 ?wikidataItem rdfs:label ?label .
                 OPTIONAL {{ ?wikidataItem schema:about ?url . }}
+                OPTIONAL {{ ?wikidataItem wdt:P18 ?itemImage . }}
+                OPTIONAL {{
+                    ?wikidataItem schema:description ?itemDescription .
+                    FILTER(LANG(?itemDescription) = "id")
+                }}
             }}
             """
 
@@ -39,21 +46,26 @@ class WikidataIngredientService:
                 data={'query': wikidata_query}
             ) as response:
                 results = await response.json()
-
         # Process results
         ingredient_urls = {}
         for result in results['results']['bindings']:
             ingredient = result['label']['value']
             wikidata_url = result.get('wikidataItem', {}).get('value')
             schema_url = result.get('url', {}).get('value', '')
-            ingredient_urls[ingredient] = schema_url or wikidata_url
+            ingredient_urls[ingredient] = {
+                'url': schema_url or wikidata_url,
+                'imageUrl': result.get('itemImage', {}).get('value'),
+                'description': result.get('itemDescription', {}).get('value')
+            }
 
         return ingredient_urls
+
 
 def recipe_detail_view(request, recipe_name):
     # Query GraphDB for recipe details
     sparql = SPARQLWrapper(os.getenv("GRAPHDB_REPO_URL"))
-    sparql.setCredentials(os.getenv("GRAPHDB_USER"), os.getenv("GRAPHDB_PASSWORD"))
+    sparql.setCredentials(os.getenv("GRAPHDB_USER"),
+                          os.getenv("GRAPHDB_PASSWORD"))
     sparql.setHTTPAuth(BASIC)
     sparql.setReturnFormat(JSON)
 
@@ -62,8 +74,8 @@ def recipe_detail_view(request, recipe_name):
     PREFIX vocab: <https://food-recipe.up.railway.app/vocab#>
     PREFIX base: <https://food-recipe.up.railway.app/data/>
 
-    SELECT ?recipe ?title ?url ?description ?prepTime ?cookTime 
-        ?cuisine ?category ?ingredients ?instructions ?steps 
+    SELECT ?recipe ?title ?url ?description ?prepTime ?cookTime
+        ?cuisine ?category ?ingredients ?instructions ?steps
         ?dietType ?recordHealth ?rating ?totalLikes ?totalSteps ?totalIngredients
         ?author ?tags ?voteCount ?courseFor
     WHERE {{
@@ -98,7 +110,7 @@ def recipe_detail_view(request, recipe_name):
 
     if not results:
         raise Http404("Recipe not found")
-    
+
     # Collect unique ingredients (case-insensitive)
     unique_ingredients = {}
     for result in results:
@@ -109,9 +121,10 @@ def recipe_detail_view(request, recipe_name):
 
     # Query Wikidata for unique ingredients
     ingredient_urls = asyncio.run(
-        WikidataIngredientService.batch_query_ingredients(list(unique_ingredients.values()))
+        WikidataIngredientService.batch_query_ingredients(
+            list(unique_ingredients.values()))
     )
-
+    print(ingredient_urls)
     # Process GraphDB results
     recipes = {}
     for result in results:
@@ -142,11 +155,20 @@ def recipe_detail_view(request, recipe_name):
         if 'ingredients' in result:
             ingredient = result['ingredients']['value']
             normalized_ingredient = ingredient.lower()
-            ingredient_url = ingredient_urls.get(unique_ingredients[normalized_ingredient])
+            ingredient_url = ingredient_urls.get(
+                unique_ingredients[normalized_ingredient])
+
             recipes[recipe_id]['ingredients'][unique_ingredients[normalized_ingredient]] = {
                 'label': normalized_ingredient,
-                'url': ingredient_url
             }
+
+            if ingredient_url:
+                recipes[recipe_id]['ingredients'][unique_ingredients[normalized_ingredient]] = {
+                    'label': normalized_ingredient,
+                    'imageUrl': ingredient_url['imageUrl'],
+                    'description': ingredient_url['description'],
+                    'url': ingredient_url['url']
+                }
         # Handle tags
         if 'tags' in result:
             tag = result['tags']['value']
@@ -158,7 +180,8 @@ def recipe_detail_view(request, recipe_name):
         # Handle steps
         if 'steps' in result:
             steps = result['steps']['value']
-            recipes[recipe_id]['instructions'] = re.split(r'\s*\d+\)\s*', steps)[1:]
+            recipes[recipe_id]['instructions'] = re.split(
+                r'\s*\d+\)\s*', steps)[1:]
 
     # Convert recipes to a list
     recipe_list = []
@@ -171,4 +194,7 @@ def recipe_detail_view(request, recipe_name):
         'recipes': recipe_list
     }
 
+    print(context)
+
+    print(context)
     return render(request, 'recipe/recipe_list.html', context)
