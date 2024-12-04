@@ -188,9 +188,12 @@ def recipe_detail_view(request, recipe_name):
         recipe['ingredients'] = list(recipe['ingredients'].values())
         recipe['tags'] = list(recipe['tags'].values())
         recipe_list.append(recipe)
+    
+    referer = request.META.get('HTTP_REFERER', '')  
 
     context = {
-        'recipes': recipe_list
+        'recipes': recipe_list,
+        'referer': referer,
     }
-    
+
     return render(request, 'recipe/recipe_list.html', context)
