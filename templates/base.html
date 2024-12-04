@@ -6,7 +6,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    {% block meta %} {% endblock meta %}
+    <meta name="description"
+      content="Temukan berbagai resep makanan lezat dengan mudah! Aplikasi FoodRecipe membantu Anda mencari resep terbaik berdasarkan bahan, kategori, dan waktu memasak. Cocok untuk pemula hingga ahli masak.">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+    {% block meta %}
+    <title>Food Recipe App | by MyHouseholder.m</title>
+    {% endblock meta %}
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
 
