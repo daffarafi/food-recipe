@@ -34,13 +34,19 @@
 
                 {% if recipe.cuisine %}
                 <div class="mt-1">
-                    <span class="font-medium text-gray-700">Cuisine:</span> {{ recipe.cuisine }}
+                    <span class="font-medium text-gray-700">Cuisine:</span> 
+                    <a href="{% url 'search' %}?q={{ recipe.cuisine|urlencode }}" class="text-blue-500 hover:underline">
+                        {{ recipe.cuisine }}
+                    </a>
                 </div>
                 {% endif %}
 
                 {% if recipe.category %}
                 <div class="mt-1">
-                    <span class="font-medium text-gray-700">Category:</span> {{ recipe.category }}
+                    <span class="font-medium text-gray-700">Category:</span> 
+                    <a href="{% url 'search' %}?q={{ recipe.category|urlencode }}" class="text-blue-500 hover:underline">
+                        {{ recipe.category }}
+                    </a>
                 </div>
                 {% endif %}
 
@@ -97,7 +103,11 @@
                     <h3 class="text-lg font-semibold text-gray-800">Tags:</h3>
                     <ul class="list-disc list-inside mt-2 text-gray-700">
                         {% for tag in recipe.tags %}
-                        <li>{{ tag }}</li>
+                        <li>
+                            <a href="{% url 'search' %}?q={{ tag|urlencode }}" class="text-blue-500 hover:underline">
+                                {{ tag }}
+                            </a>
+                        </li>
                         {% endfor %}
                     </ul>
                 </div>

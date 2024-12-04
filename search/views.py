@@ -52,12 +52,19 @@ def search_recipes(query):
     WHERE {{
         ?food vocab:hasRecipe ?recipe .
         ?recipe rdfs:label ?title .
-        FILTER(CONTAINS(LCASE(?title), LCASE("{query}")))
-        
+
+        # Optional fields
         OPTIONAL {{ ?recipe vocab:cuisineOf/rdfs:label ?cuisine }}
-        OPTIONAL {{ ?recipe vocab:hasPrepTime ?prepTime }}
-        OPTIONAL {{ ?recipe vocab:hasCookTime ?cookTime }}
-        OPTIONAL {{ ?recipe vocab:hasRating ?rating }}
+        OPTIONAL {{ ?recipe vocab:hasCategory/rdfs:label ?category }}
+        OPTIONAL {{ ?recipe vocab:hasTags/rdfs:label ?tags }}
+
+        # Match the query in any of these fields
+        FILTER(
+            CONTAINS(LCASE(?title), LCASE("{query}")) ||
+            CONTAINS(LCASE(?cuisine), LCASE("{query}")) ||
+            CONTAINS(LCASE(?category), LCASE("{query}")) ||
+            CONTAINS(LCASE(?tags), LCASE("{query}"))
+        )
     }}
     GROUP BY ?food
     LIMIT 50

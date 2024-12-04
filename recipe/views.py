@@ -162,8 +162,6 @@ def recipe_detail_view(request, recipe_name):
         recipe['tags'] = list(recipe['tags'].values())
         recipe_list.append(recipe)
 
-    print(recipe_list[0])
-
     context = {
         'recipes': recipe_list
     }
