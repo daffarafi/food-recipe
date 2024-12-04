@@ -1,38 +1,52 @@
 import os
+import asyncio
+import aiohttp
 from dotenv import load_dotenv
 from SPARQLWrapper import SPARQLWrapper, JSON, BASIC
 from django.shortcuts import render
 from django.http import Http404
+import re
 
 load_dotenv()
 
-def query_ingredient_from_wikidata(ingredient_label):
-    """
-    Query Wikidata to fetch a URL for the given ingredient label.
-    """
-    sparql = SPARQLWrapper("https://query.wikidata.org/sparql")
-    sparql.setReturnFormat(JSON)
-    
-    wikidata_query = f"""
-    PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-    PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-    PREFIX wd: <http://www.wikidata.org/entity/>
-    PREFIX schema: <http://schema.org/>
+class WikidataIngredientService:
+    @classmethod
+    async def batch_query_ingredients(cls, ingredients):
+        """
+        Batch query ingredients from Wikidata with async support.
+        """
+        # Prepare Wikidata batch query
+        async with aiohttp.ClientSession() as session:
+            wikidata_query = f"""
+            PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+            PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+            PREFIX wd: <http://www.wikidata.org/entity/>
+            PREFIX schema: <http://schema.org/>
 
-    SELECT DISTINCT ?wikidataItem ?url
-    WHERE {{
-        ?wikidataItem rdfs:label "{ingredient_label}"@id .
-        OPTIONAL {{ ?wikidataItem schema:about ?url . }}
-    }} LIMIT 1
-    """
+            SELECT DISTINCT ?label ?wikidataItem ?url
+            WHERE {{
+                VALUES ?label {{ {" ".join(f'"{ingredient}"@id' for ingredient in ingredients)} }}
+                ?wikidataItem rdfs:label ?label .
+                OPTIONAL {{ ?wikidataItem schema:about ?url . }}
+            }}
+            """
 
-    sparql.setQuery(wikidata_query)
-    results = sparql.queryAndConvert().get('results', {}).get('bindings', [])
-    if not results:
-        return None
+            async with session.post(
+                'https://query.wikidata.org/sparql',
+                headers={'Accept': 'application/sparql-results+json'},
+                data={'query': wikidata_query}
+            ) as response:
+                results = await response.json()
 
-    result = results[0]
-    return result['wikidataItem']['value']
+        # Process results
+        ingredient_urls = {}
+        for result in results['results']['bindings']:
+            ingredient = result['label']['value']
+            wikidata_url = result.get('wikidataItem', {}).get('value')
+            schema_url = result.get('url', {}).get('value', '')
+            ingredient_urls[ingredient] = schema_url or wikidata_url
+
+        return ingredient_urls
 
 def recipe_detail_view(request, recipe_name):
     # Query GraphDB for recipe details
@@ -47,7 +61,7 @@ def recipe_detail_view(request, recipe_name):
     PREFIX base: <https://food-recipe.up.railway.app/data/>
 
     SELECT ?recipe ?title ?url ?description ?prepTime ?cookTime 
-           ?cuisine ?category ?ingredients ?instructions
+           ?cuisine ?category ?ingredients ?instructions ?steps
     WHERE {{
         ?food vocab:hasRecipe ?recipe .
         FILTER(CONTAINS(STR(?food), "{recipe_name}"))
@@ -61,6 +75,7 @@ def recipe_detail_view(request, recipe_name):
         OPTIONAL {{ ?recipe vocab:hasCategory/rdfs:label ?category }}
         OPTIONAL {{ ?recipe vocab:hasIngredients/vocab:ingredient/rdfs:label ?ingredients }}
         OPTIONAL {{ ?recipe vocab:hasInstructions ?instructions }}
+        OPTIONAL {{ ?recipe vocab:hasSteps ?steps }}
     }}
     """
 
@@ -69,6 +84,17 @@ def recipe_detail_view(request, recipe_name):
 
     if not results:
         raise Http404("Recipe not found")
+    
+    # Collect unique ingredients
+    unique_ingredients = set()
+    for result in results:
+        if 'ingredients' in result:
+            unique_ingredients.add(result['ingredients']['value'])
+
+    # Query Wikidata for unique ingredients
+    ingredient_urls = asyncio.run(
+        WikidataIngredientService.batch_query_ingredients(list(unique_ingredients))
+    )
 
     # Process GraphDB results
     recipes = {}
@@ -83,24 +109,34 @@ def recipe_detail_view(request, recipe_name):
                 'cookTime': result.get('cookTime', {}).get('value', ''),
                 'cuisine': result.get('cuisine', {}).get('value', ''),
                 'category': result.get('category', {}).get('value', ''),
-                'ingredients': [],
-                'instructions': []
+                'ingredients': {},
+                'instructions': [],
             }
         # Handle ingredients
         if 'ingredients' in result:
             ingredient = result['ingredients']['value']
-            ingredient_url = query_ingredient_from_wikidata(ingredient)
-            recipes[recipe_id]['ingredients'].append({
+            ingredient_url = ingredient_urls.get(ingredient)
+            recipes[recipe_id]['ingredients'][ingredient] = {
                 'label': ingredient,
                 'url': ingredient_url
-            })
+            }
         # Handle instructions
         if 'instructions' in result:
             instructions = result['instructions']['value'].split('|')
             recipes[recipe_id]['instructions'] = instructions
+        # Handle steps
+        if 'steps' in result:
+            steps = result['steps']['value']
+            # Use regex to split steps based on the pattern `1)` or similar
+            recipes[recipe_id]['instructions'] = re.split(r'\s*\d+\)\s*', steps)[1:]
 
     # Convert recipes to a list
-    recipe_list = list(recipes.values())
+    recipe_list = []
+    for recipe in recipes.values():
+        recipe['ingredients'] = list(recipe['ingredients'].values())  # Convert ingredients back to a list
+        recipe_list.append(recipe)
+
+    print(recipe_list[0])
 
     context = {
         'recipes': recipe_list

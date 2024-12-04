@@ -8,3 +8,4 @@ SPARQLWrapper
 python-dotenv
 fuzzywuzzy
 python-Levenshtein
+aiohttp
