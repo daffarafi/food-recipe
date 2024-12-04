@@ -1,0 +1,69 @@
+{% extends 'base.html' %} {% block content %}
+<div class="container mx-auto p-4">
+	<div class="mb-6">
+		<form action="{% url 'search' %}" method="get" class="max-w-md mx-auto">
+			<div class="flex">
+				<input
+					type="search"
+					name="q"
+					value="{{ query }}"
+					placeholder="Search for recipes"
+					class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+					required
+				/>
+				<button
+					type="submit"
+					class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300"
+				>
+					Search
+				</button>
+			</div>
+		</form>
+	</div>
+
+	<h1 class="text-2xl font-bold mb-4">Search Results for "{{ query }}"</h1>
+
+	{% if results %}
+	<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+		{% for result in results %}
+		<div class="bg-white shadow-md rounded-lg p-4">
+			<h2 class="text-xl font-semibold mb-2">
+				<a href="{% url 'recipe_detail' recipe_name=result.slug %}">
+					{{ result.food_title }}
+				</a>
+			</h2>
+			<div class="text-gray-600">
+				{% if result.cuisine %}
+				<p>Cuisine: {{ result.cuisine.value }}</p>
+				{% endif %} {% if result.prepTime and result.cookTime %}
+				<p>
+					Prep Time: {{ result.prepTime.value }} min | Cook Time: {{
+					result.cookTime.value }} min
+				</p>
+				{% endif %} {% if result.rating %}
+				<p>Rating: {{ result.rating.value }}/5</p>
+				{% endif %}
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	{% else %}
+	<p class="text-gray-600">No results found for "{{ query }}"</p>
+	{% endif %} {% if suggestion %}
+	<div
+		class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mt-4"
+		role="alert"
+	>
+		<p>
+			Did you mean:
+			<a
+				href="{% url 'search' %}?q={{ suggestion|urlencode }}"
+				class="underline"
+			>
+				{{ suggestion }}
+			</a>
+		</p>
+	</div>
+	{% endif %}
+</div>
+{% endblock %}
