@@ -124,7 +124,6 @@ def recipe_detail_view(request, recipe_name):
         WikidataIngredientService.batch_query_ingredients(
             list(unique_ingredients.values()))
     )
-    print(ingredient_urls)
     # Process GraphDB results
     recipes = {}
     for result in results:
@@ -193,8 +192,5 @@ def recipe_detail_view(request, recipe_name):
     context = {
         'recipes': recipe_list
     }
-
-    print(context)
-
-    print(context)
+    
     return render(request, 'recipe/recipe_list.html', context)

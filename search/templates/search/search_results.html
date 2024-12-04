@@ -47,7 +47,60 @@
 		</div>
 		{% endfor %}
 	</div>
-	{% else %}
+
+	{% if results.has_other_pages %}
+	<div class="flex justify-center mt-4">
+		<nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+			{% if results.has_previous %}
+			<a
+				href="?q={{ query|urlencode }}&page=1"
+				class="px-3 py-2 text-sm font-medium border rounded-l-md hover:bg-gray-200"
+				>First</a
+			>
+			<a
+				href="?q={{ query|urlencode }}&page={{ results.previous_page_number }}"
+				class="px-3 py-2 text-sm font-medium border hover:bg-gray-200"
+				>Previous</a
+			>
+			{% else %}
+			<span
+				class="px-3 py-2 text-sm font-medium border rounded-l-md bg-gray-100 text-gray-400"
+				>First</span
+			>
+			<span
+				class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400"
+				>Previous</span
+			>
+			{% endif %}
+
+			<span class="px-3 py-2 text-sm font-medium border bg-gray-100"
+				>{{ results.number }} of {{ results.paginator.num_pages }}</span
+			>
+
+			{% if results.has_next %}
+			<a
+				href="?q={{ query|urlencode }}&page={{ results.next_page_number }}"
+				class="px-3 py-2 text-sm font-medium border hover:bg-gray-200"
+				>Next</a
+			>
+			<a
+				href="?q={{ query|urlencode }}&page={{ results.paginator.num_pages }}"
+				class="px-3 py-2 text-sm font-medium border rounded-r-md hover:bg-gray-200"
+				>Last</a
+			>
+			{% else %}
+			<span
+				class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400"
+				>Next</span
+			>
+			<span
+				class="px-3 py-2 text-sm font-medium border rounded-r-md bg-gray-100 text-gray-400"
+				>Last</span
+			>
+			{% endif %}
+		</nav>
+	</div>
+	{% endif %} {% else %}
 	<p class="text-gray-600">No results found for "{{ query }}"</p>
 	{% endif %} {% if suggestion %}
 	<div

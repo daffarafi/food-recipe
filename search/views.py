@@ -4,6 +4,7 @@ from SPARQLWrapper import SPARQLWrapper, JSON, BASIC
 from django.shortcuts import render
 from fuzzywuzzy import process
 from urllib.parse import unquote
+from django.core.paginator import Paginator
 
 load_dotenv()
 
@@ -63,7 +64,6 @@ def search_recipes(query):
         )
     }}
     GROUP BY ?food
-    LIMIT 50
     """
     sparql.setQuery(sparql_query)
     try:
@@ -81,6 +81,7 @@ def search_recipes(query):
 # View to handle recipe search
 def search_view(request):
     query = request.GET.get('q', '').strip()
+    page_number = request.GET.get('page', 1)  # Get current page from request
     if not query:
         return render(request, 'search/search_results.html', {'results': [], 'query': query})
 
@@ -93,9 +94,13 @@ def search_view(request):
     # Generate suggestion if no results are found
     suggestion = None if search_results else find_similar_recipes(query, all_titles)
 
+    # Pagination setup
+    paginator = Paginator(search_results, 50)  # Show 50 results per page
+    current_page = paginator.get_page(page_number)
+
     # Prepare context
     context = {
-        'results': search_results,
+        'results': current_page,
         'query': query,
         'suggestion': suggestion,
     }
