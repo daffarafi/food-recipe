@@ -68,7 +68,7 @@ def recipe_detail_view(request, recipe_name):
         ?author ?tags ?voteCount ?courseFor
     WHERE {{
         ?food vocab:hasRecipe ?recipe .
-        FILTER(CONTAINS(STR(?food), "{recipe_name}"))
+        FILTER(STR(?food) = "https://food-recipe.up.railway.app/data/{recipe_name}")
         ?recipe rdfs:label ?title .
 
         OPTIONAL {{ ?recipe vocab:hasUrl ?url }}
