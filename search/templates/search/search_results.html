@@ -1,122 +1,85 @@
 {% extends 'base.html' %} {% block content %}
 <div class="container mx-auto p-4">
-	<div class="mb-6">
-		<form action="{% url 'search' %}" method="get" class="max-w-md mx-auto">
-			<div class="flex">
-				<input
-					type="search"
-					name="q"
-					value="{{ query }}"
-					placeholder="Search for recipes"
-					class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-					required
-				/>
-				<button
-					type="submit"
-					class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300"
-				>
-					Search
-				</button>
-			</div>
-		</form>
-	</div>
+  <div class="mb-6">
+    <form action="{% url 'search' %}" method="get" class="max-w-md mx-auto">
+      <div class="flex">
+        <input type="search" name="q" value="{{ query }}" placeholder="Search for recipes"
+          class="flex-grow px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required />
+        <button type="submit"
+          class="bg-blue-500 text-white px-4 py-2 rounded-r-md hover:bg-blue-600 transition duration-300">
+          Search
+        </button>
+      </div>
+    </form>
+  </div>
 
-	<h1 class="text-2xl font-bold mb-4">Search Results for "{{ query }}"</h1>
+  <h1 class="text-2xl font-bold mb-4">Search Results for "{{ query }}"</h1>
 
-	{% if results %}
-	<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-		{% for result in results %}
-		<div class="bg-white shadow-md rounded-lg p-4">
-			<h2 class="text-xl font-semibold mb-2">
-				<a href="{% url 'recipe_detail' recipe_name=result.slug %}">
-					{{ result.food_title }}
-				</a>
-			</h2>
-			<div class="text-gray-600">
-				{% if result.cuisine %}
-				<p>Cuisine: {{ result.cuisine.value }}</p>
-				{% endif %} {% if result.prepTime and result.cookTime %}
-				<p>
-					Prep Time: {{ result.prepTime.value }} min | Cook Time: {{
-					result.cookTime.value }} min
-				</p>
-				{% endif %} {% if result.rating %}
-				<p>Rating: {{ result.rating.value }}/5</p>
-				{% endif %}
-			</div>
-		</div>
-		{% endfor %}
-	</div>
+  {% if results %}
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for result in results %}
+    <div class="bg-white shadow-md rounded-lg p-4">
+      <h2 class="text-xl font-semibold mb-2">
+        <a href="{% url 'recipe_detail' recipe_name=result.slug %}">
+          <span class="block">{{ result.food_title }}</span>
+          <span class="block font-thin text-base">Total recipe: {{ result.recipe_count }}</span>
+        </a>
+      </h2>
+      <div class="text-gray-600">
+        {% if result.cuisine %}
+        <p>Cuisine: {{ result.cuisine.value }}</p>
+        {% endif %} {% if result.prepTime and result.cookTime %}
+        <p>
+          Prep Time: {{ result.prepTime.value }} min | Cook Time: {{
+          result.cookTime.value }} min
+        </p>
+        {% endif %} {% if result.rating %}
+        <p>Rating: {{ result.rating.value }}/5</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 
-	{% if results.has_other_pages %}
-	<div class="flex justify-center mt-4">
-		<nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
-			{% if results.has_previous %}
-			<a
-				href="?q={{ query|urlencode }}&page=1"
-				class="px-3 py-2 text-sm font-medium border rounded-l-md hover:bg-gray-200"
-				>First</a
-			>
-			<a
-				href="?q={{ query|urlencode }}&page={{ results.previous_page_number }}"
-				class="px-3 py-2 text-sm font-medium border hover:bg-gray-200"
-				>Previous</a
-			>
-			{% else %}
-			<span
-				class="px-3 py-2 text-sm font-medium border rounded-l-md bg-gray-100 text-gray-400"
-				>First</span
-			>
-			<span
-				class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400"
-				>Previous</span
-			>
-			{% endif %}
+  {% if results.has_other_pages %}
+  <div class="flex justify-center mt-4">
+    <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+      {% if results.has_previous %}
+      <a href="?q={{ query|urlencode }}&page=1"
+        class="px-3 py-2 text-sm font-medium border rounded-l-md hover:bg-gray-200">First</a>
+      <a href="?q={{ query|urlencode }}&page={{ results.previous_page_number }}"
+        class="px-3 py-2 text-sm font-medium border hover:bg-gray-200">Previous</a>
+      {% else %}
+      <span class="px-3 py-2 text-sm font-medium border rounded-l-md bg-gray-100 text-gray-400">First</span>
+      <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Previous</span>
+      {% endif %}
 
-			<span class="px-3 py-2 text-sm font-medium border bg-gray-100"
-				>{{ results.number }} of {{ results.paginator.num_pages }}</span
-			>
+      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of {{
+        results.paginator.num_pages }}</span>
 
-			{% if results.has_next %}
-			<a
-				href="?q={{ query|urlencode }}&page={{ results.next_page_number }}"
-				class="px-3 py-2 text-sm font-medium border hover:bg-gray-200"
-				>Next</a
-			>
-			<a
-				href="?q={{ query|urlencode }}&page={{ results.paginator.num_pages }}"
-				class="px-3 py-2 text-sm font-medium border rounded-r-md hover:bg-gray-200"
-				>Last</a
-			>
-			{% else %}
-			<span
-				class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400"
-				>Next</span
-			>
-			<span
-				class="px-3 py-2 text-sm font-medium border rounded-r-md bg-gray-100 text-gray-400"
-				>Last</span
-			>
-			{% endif %}
-		</nav>
-	</div>
-	{% endif %} {% else %}
-	<p class="text-gray-600">No results found for "{{ query }}"</p>
-	{% endif %} {% if suggestion %}
-	<div
-		class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mt-4"
-		role="alert"
-	>
-		<p>
-			Did you mean:
-			<a
-				href="{% url 'search' %}?q={{ suggestion|urlencode }}"
-				class="underline"
-			>
-				{{ suggestion }}
-			</a>
-		</p>
-	</div>
-	{% endif %}
+      {% if results.has_next %}
+      <a href="?q={{ query|urlencode }}&page={{ results.next_page_number }}"
+        class="px-3 py-2 text-sm font-medium border hover:bg-gray-200">Next</a>
+      <a href="?q={{ query|urlencode }}&page={{ results.paginator.num_pages }}"
+        class="px-3 py-2 text-sm font-medium border rounded-r-md hover:bg-gray-200">Last</a>
+      {% else %}
+      <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Next</span>
+      <span class="px-3 py-2 text-sm font-medium border rounded-r-md bg-gray-100 text-gray-400">Last</span>
+      {% endif %}
+    </nav>
+  </div>
+  {% endif %} {% else %}
+  <p class="text-gray-600">No results found for "{{ query }}"</p>
+  {% endif %} {% if suggestion %}
+  <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative mt-4" role="alert">
+    <p>
+      Did you mean:
+      <a href="{% url 'search' %}?q={{ suggestion|urlencode }}" class="underline">
+        {{ suggestion }}
+      </a>
+    </p>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

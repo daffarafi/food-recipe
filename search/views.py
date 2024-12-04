@@ -9,21 +9,26 @@ from django.core.paginator import Paginator
 load_dotenv()
 
 # Utility to set up SPARQL connection
+
+
 def get_sparql_connection():
     sparql = SPARQLWrapper(os.getenv("GRAPHDB_REPO_URL"))
-    sparql.setCredentials(os.getenv("GRAPHDB_USER"), os.getenv("GRAPHDB_PASSWORD"))
+    sparql.setCredentials(os.getenv("GRAPHDB_USER"),
+                          os.getenv("GRAPHDB_PASSWORD"))
     sparql.setHTTPAuth(BASIC)
     sparql.setReturnFormat(JSON)
     return sparql
 
 # Fetch all recipe titles
+
+
 def get_all_titles():
     sparql = get_sparql_connection()
     sparql_query = """
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX vocab: <https://food-recipe.up.railway.app/vocab#>
 
-    SELECT DISTINCT ?title
+    SELECT (COUNT(DISTINCT ?recipe) AS ?recipeCount) ?title
     WHERE {
         ?recipe rdfs:label ?title .
     }
@@ -37,18 +42,22 @@ def get_all_titles():
         return []
 
 # Find the best suggestion using fuzzy matching
+
+
 def find_similar_recipes(query, all_titles):
     best_match = process.extractOne(query.lower(), all_titles, score_cutoff=70)
     return best_match[0] if best_match else None
 
 # Perform recipe search
+
+
 def search_recipes(query):
     sparql = get_sparql_connection()
     sparql_query = f"""
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
     PREFIX vocab: <https://food-recipe.up.railway.app/vocab#>
 
-    SELECT DISTINCT ?food
+    SELECT DISTINCT ?food (COUNT(DISTINCT ?recipe) AS ?recipeCount)
     WHERE {{
         ?food vocab:hasRecipe ?recipe .
         ?recipe rdfs:label ?title .
@@ -68,17 +77,22 @@ def search_recipes(query):
     sparql.setQuery(sparql_query)
     try:
         results = sparql.queryAndConvert()['results']['bindings']
+        # print('results: ', results)
         for result in results:
             slug = result['food']['value'].split('/')[-1]
             decoded_title = unquote(slug).replace('_', ' ')
+            count = result['recipeCount']['value']
             result['slug'] = slug
             result['food_title'] = decoded_title
+            result['recipe_count'] = count
         return results
     except Exception as e:
         print(f"Error performing search: {e}")
         return []
 
 # View to handle recipe search
+
+
 def search_view(request):
     query = request.GET.get('q', '').strip()
     page_number = request.GET.get('page', 1)  # Get current page from request
@@ -92,7 +106,8 @@ def search_view(request):
     search_results = search_recipes(query)
 
     # Generate suggestion if no results are found
-    suggestion = None if search_results else find_similar_recipes(query, all_titles)
+    suggestion = None if search_results else find_similar_recipes(
+        query, all_titles)
 
     # Pagination setup
     paginator = Paginator(search_results, 50)  # Show 50 results per page
