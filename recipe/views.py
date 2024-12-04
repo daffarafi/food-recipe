@@ -25,7 +25,9 @@ class WikidataIngredientService:
 
             SELECT DISTINCT ?label ?wikidataItem ?url
             WHERE {{
-                VALUES ?label {{ {" ".join(f'"{ingredient}"@id' for ingredient in ingredients)} }}
+                VALUES ?label {{ 
+                    {" ".join(f'"{ingredient}"@id "{ingredient}"@en' for ingredient in ingredients)} 
+                }}
                 ?wikidataItem rdfs:label ?label .
                 OPTIONAL {{ ?wikidataItem schema:about ?url . }}
             }}
@@ -97,15 +99,17 @@ def recipe_detail_view(request, recipe_name):
     if not results:
         raise Http404("Recipe not found")
     
-    # Collect unique ingredients
-    unique_ingredients = set()
+    # Collect unique ingredients (case-insensitive)
+    unique_ingredients = {}
     for result in results:
         if 'ingredients' in result:
-            unique_ingredients.add(result['ingredients']['value'])
+            ingredient = result['ingredients']['value']
+            normalized_ingredient = ingredient.lower()
+            unique_ingredients[normalized_ingredient] = normalized_ingredient
 
     # Query Wikidata for unique ingredients
     ingredient_urls = asyncio.run(
-        WikidataIngredientService.batch_query_ingredients(list(unique_ingredients))
+        WikidataIngredientService.batch_query_ingredients(list(unique_ingredients.values()))
     )
 
     # Process GraphDB results
@@ -137,9 +141,10 @@ def recipe_detail_view(request, recipe_name):
         # Handle ingredients
         if 'ingredients' in result:
             ingredient = result['ingredients']['value']
-            ingredient_url = ingredient_urls.get(ingredient)
-            recipes[recipe_id]['ingredients'][ingredient] = {
-                'label': ingredient,
+            normalized_ingredient = ingredient.lower()
+            ingredient_url = ingredient_urls.get(unique_ingredients[normalized_ingredient])
+            recipes[recipe_id]['ingredients'][unique_ingredients[normalized_ingredient]] = {
+                'label': normalized_ingredient,
                 'url': ingredient_url
             }
         # Handle tags
