@@ -14,13 +14,13 @@
     </form>
   </div>
 
-  <h1 class="text-2xl font-bold mb-4">Search Results for "{{ query }}"</h1>
+  <h1 class="text-base md:text-2xl font-bold mb-4">Search Results for "{{ query }}"</h1>
 
   {% if results %}
   <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
     {% for result in results %}
     <div class="bg-white shadow-md rounded-lg p-4">
-      <h2 class="text-xl font-semibold mb-2">
+      <h2 class="text-base md:text-xl font-semibold">
         <a href="{% url 'recipe_detail' recipe_name=result.slug %}">
           <span class="block">{{ result.food_title }}</span>
           <span class="block font-thin text-base">Total recipe: {{ result.recipe_count }}</span>
@@ -43,19 +43,19 @@
   </div>
 
   {% if results.has_other_pages %}
-  <div class="flex justify-center mt-4 mb-40">
-    <nav class="inline-flex rounded-md shadow-sm" aria-label="Pagination">
+  <div class="flex justify-center mt-8 mb-40">
+    <nav class="inline-flex rounded-md shadow-sm bg-gray-100" aria-label="Pagination">
       {% if results.has_previous %}
       <a href="?q={{ query|urlencode }}&page=1"
         class="px-3 py-2 text-sm font-medium border rounded-l-md hover:bg-gray-200">First</a>
       <a href="?q={{ query|urlencode }}&page={{ results.previous_page_number }}"
         class="px-3 py-2 text-sm font-medium border hover:bg-gray-200">Previous</a>
       {% else %}
-      <span class="px-3 py-2 text-sm font-medium border rounded-l-md bg-gray-100 text-gray-400">First</span>
-      <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Previous</span>
+      <span class="px-3 py-2 text-sm font-medium border rounded-l-md text-gray-400">First</span>
+      <span class="px-3 py-2 text-sm font-medium border text-gray-400">Previous</span>
       {% endif %}
 
-      <span class="px-3 py-2 text-sm font-medium border bg-gray-100">{{ results.number }} of
+      <span class="px-3 py-2 text-sm font-medium border">{{ results.number }} of
         {{ results.paginator.num_pages }}</span>
 
       {% if results.has_next %}
@@ -64,8 +64,8 @@
       <a href="?q={{ query|urlencode }}&page={{ results.paginator.num_pages }}"
         class="px-3 py-2 text-sm font-medium border rounded-r-md hover:bg-gray-200">Last</a>
       {% else %}
-      <span class="px-3 py-2 text-sm font-medium border bg-gray-100 text-gray-400">Next</span>
-      <span class="px-3 py-2 text-sm font-medium border rounded-r-md bg-gray-100 text-gray-400">Last</span>
+      <span class="px-3 py-2 text-sm font-medium border text-gray-400">Next</span>
+      <span class="px-3 py-2 text-sm font-medium border rounded-r-md text-gray-400">Last</span>
       {% endif %}
     </nav>
   </div>

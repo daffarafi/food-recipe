@@ -1,23 +1,22 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container mx-auto py-8 px-4 flex">
-  {% if recipes %}
-  <!-- Fixed Recipe Title at Top -->
-  <div class="fixed top-0 inset-x-0 bg-white z-50 shadow-md">
-    <h1 class="text-center text-2xl font-bold text-gray-900 py-4">
-      {% if recipes and recipes|length > 0 %}
-        {{ recipes.0.title }}
-      {% else %}
-        Recipe List
-      {% endif %}
-    </h1>
-  </div>
 
+<div class="container mx-auto py-8 px-4 flex flex-col md:flex-row relative z-10">
+  {% if recipes %}
   <!-- Sidebar Navigation -->
-  <aside class="w-1/4 pr-8">
-    <nav class="sticky top-[5rem]">
-      <h2 class="text-xl font-bold mb-4 text-gray-800">Navigation</h2>
-      <div class="my-3">
+  <aside class="md:w-[400px] md:pr-8 max-md:mt-12">
+    <!-- Toggle Button for Mobile -->
+    <div class="md:hidden flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">Navigation</h2>
+      <button id="toggleSidebar" class="text-blue-500 hover:underline focus:outline-none">
+        ☰ Menu
+      </button>
+    </div>
+  
+    <!-- Sidebar Navigation -->
+    <nav id="mobileSidebar" class="hidden md:block sticky top-[5rem] bg-white p-4 rounded-lg shadow-md overflow-y-auto max-h-[200px] md:max-h-[calc(100vh-6rem)] transition-all mb-6">
+      <h2 class="text-xl font-bold mb-4 text-gray-800 hidden md:block">Navigation</h2>
+      <div class="mb-3 md:my-3">
         {% if referer %}
         <a href="{{ referer }}" class="text-blue-500 hover:underline">
           ← Back to Search Results
@@ -34,13 +33,13 @@
         {% endfor %}
       </ul>
     </nav>
-  </aside>
+  </aside>  
 
   <!-- Recipe List -->
-  <div class="space-y-6 w-3/4 mt-12">
+  <div class="space-y-6 w-full md:mt-12">
     {% for recipe in recipes %}
     <div id="recipe-{{ forloop.counter }}" class="p-6 bg-white rounded-lg shadow-md scroll-mt-[5rem]">
-      <h2 class="text-2xl font-semibold text-gray-900">Recipe {{ forloop.counter }}</h2>
+      <h2 class="text-2xl font-semibold text-gray-900">{{ forloop.counter }}. {{ recipe.title }}</h2>
 
       {% if recipe.url %}
       <p class="text-blue-600 hover:underline">
@@ -199,4 +198,11 @@
   <p class="text-gray-600">No recipes found.</p>
   {% endif %}
 </div>
+<script>
+  document.getElementById('toggleSidebar').addEventListener('click', () => {
+    const sidebar = document.getElementById('mobileSidebar');
+    sidebar.classList.toggle('hidden');
+    sidebar.classList.toggle('block');
+  });
+</script>
 {% endblock %}
