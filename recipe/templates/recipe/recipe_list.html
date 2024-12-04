@@ -1,77 +1,141 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'base.html' %} 
+{% block content %}
 <div class="container mx-auto py-8 px-4">
-	<h1 class="text-3xl font-bold mb-6 text-gray-800">Recipe List</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Recipe List</h1>
 
-	{% if recipes %}
-	<div class="space-y-6">
-		{% for recipe in recipes %}
-		<div class="p-6 bg-white rounded-lg shadow-md">
-			<h2 class="text-2xl font-semibold text-gray-900">{{ recipe.title }}</h2>
+    {% if recipes %}
+    <div class="space-y-6">
+        {% for recipe in recipes %}
+        <div class="p-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-2xl font-semibold text-gray-900">{{ recipe.title }}</h2>
 
-			{% if recipe.url %}
-			<p class="text-blue-600 hover:underline">
-				<a href="{{ recipe.url }}" target="_blank">View Source</a>
-			</p>
-			{% endif %} {% if recipe.description %}
-			<p class="mt-2 text-gray-600">{{ recipe.description }}</p>
-			{% endif %}
+            {% if recipe.url %}
+            <p class="text-blue-600 hover:underline">
+                <a href="{{ recipe.url }}" target="_blank">View Source</a>
+            </p>
+            {% endif %}
 
-			<div class="mt-4">
-				{% if recipe.prepTime %}
-				<div class="mt-1">
-					<span class="font-medium text-gray-700">Prep Time:</span> {{ recipe.prepTime }} min
-				</div>
-				{% endif %} {% if recipe.cookTime %}
-				<div class="mt-1">
-					<span class="font-medium text-gray-700">Cook Time:</span> {{ recipe.cookTime }} min
-				</div>
-				{% endif %} {% if recipe.cuisine %}
-				<div class="mt-1">
-					<span class="font-medium text-gray-700">Cuisine:</span> {{ recipe.cuisine }}
-				</div>
-				{% endif %} {% if recipe.category %}
-				<div class="mt-1">
-					<span class="font-medium text-gray-700">Category:</span> {{ recipe.category }}
-				</div>
-				{% endif %}
-			</div>
+            {% if recipe.description %}
+            <p class="mt-2 text-gray-600">{{ recipe.description }}</p>
+            {% endif %}
 
-			<div class="mt-4">
-				<h3 class="text-lg font-semibold text-gray-800">Ingredients:</h3>
-				<ul class="list-disc list-inside mt-2 text-gray-700">
-					{% for ingredient in recipe.ingredients %}
-					<li>
-						{% if ingredient.url %}
-						<a
-							href="{{ ingredient.url }}"
-							target="_blank"
-							class="text-blue-500 hover:text-blue-700 underline"
-						>
-							{{ ingredient.label }}
-						</a>
-						{% else %}
-						<span class="text-gray-800">{{ ingredient.label }}</span>
-						{% endif %}
-					</li>
-					{% endfor %}
-				</ul>
-			</div>
+            <div class="mt-4">
+                {% if recipe.prepTime %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Prep Time:</span> {{ recipe.prepTime }} min
+                </div>
+                {% endif %}
 
-			{% if recipe.instructions %}
-			<div class="mt-4">
-				<h3 class="text-lg font-semibold text-gray-800">Instructions:</h3>
-				<ol class="list-decimal list-inside mt-2 text-gray-700">
-					{% for instruction in recipe.instructions %}
-					<li>{{ instruction }}</li>
-					{% endfor %}
-				</ol>
-			</div>
-			{% endif %}
-		</div>
-		{% endfor %}
-	</div>
-	{% else %}
-	<p class="text-gray-600">No recipes found.</p>
-	{% endif %}
+                {% if recipe.cookTime %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Cook Time:</span> {{ recipe.cookTime }} min
+                </div>
+                {% endif %}
+
+                {% if recipe.cuisine %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Cuisine:</span> {{ recipe.cuisine }}
+                </div>
+                {% endif %}
+
+                {% if recipe.category %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Category:</span> {{ recipe.category }}
+                </div>
+                {% endif %}
+
+								{% if recipe.rating %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Rating:</span> {{ recipe.rating }}
+                </div>
+                {% endif %}
+
+                {% if recipe.totalLikes %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Total Likes:</span> {{ recipe.totalLikes }}
+                </div>
+                {% endif %}
+
+                {% if recipe.totalIngredients %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Total Ingredients:</span> {{ recipe.totalIngredients }}
+                </div>
+                {% endif %}
+
+                {% if recipe.totalSteps %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Total Steps:</span> {{ recipe.totalSteps }}
+                </div>
+                {% endif %}
+
+                {% if recipe.author %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Author:</span> {{ recipe.author }}
+                </div>
+                {% endif %}
+
+								{% if recipe.dietType %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Diet:</span> {{ recipe.dietType }}
+                </div>
+                {% endif %}
+
+								{% if recipe.recordHealth %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Record Health:</span> {{ recipe.recordHealth }}
+                </div>
+                {% endif %}
+
+                {% if recipe.courseFor %}
+                <div class="mt-1">
+                    <span class="font-medium text-gray-700">Course For:</span> {{ recipe.courseFor }}
+                </div>
+                {% endif %}
+
+                {% if recipe.tags %}
+                <div class="mt-1">
+                    <h3 class="text-lg font-semibold text-gray-800">Tags:</h3>
+                    <ul class="list-disc list-inside mt-2 text-gray-700">
+                        {% for tag in recipe.tags %}
+                        <li>{{ tag }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="mt-4">
+                <h3 class="text-lg font-semibold text-gray-800">Ingredients:</h3>
+                <ul class="list-disc list-inside mt-2 text-gray-700">
+                    {% for ingredient in recipe.ingredients %}
+                    <li>
+                        {% if ingredient.url %}
+                        <a href="{{ ingredient.url }}" target="_blank" class="text-blue-500 hover:text-blue-700 underline">
+                            {{ ingredient.label }}
+                        </a>
+                        {% else %}
+                        <span class="text-gray-800">{{ ingredient.label }}</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            {% if recipe.instructions %}
+            <div class="mt-4">
+                <h3 class="text-lg font-semibold text-gray-800">Instructions:</h3>
+                <ol class="list-decimal list-inside mt-2 text-gray-700">
+                    {% for instruction in recipe.instructions %}
+                    <li>{{ instruction }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-600">No recipes found.</p>
+    {% endif %}
 </div>
 {% endblock %}

@@ -61,7 +61,9 @@ def recipe_detail_view(request, recipe_name):
     PREFIX base: <https://food-recipe.up.railway.app/data/>
 
     SELECT ?recipe ?title ?url ?description ?prepTime ?cookTime 
-           ?cuisine ?category ?ingredients ?instructions ?steps
+        ?cuisine ?category ?ingredients ?instructions ?steps 
+        ?dietType ?recordHealth ?rating ?totalLikes ?totalSteps ?totalIngredients
+        ?author ?tags ?voteCount ?courseFor
     WHERE {{
         ?food vocab:hasRecipe ?recipe .
         FILTER(CONTAINS(STR(?food), "{recipe_name}"))
@@ -76,6 +78,16 @@ def recipe_detail_view(request, recipe_name):
         OPTIONAL {{ ?recipe vocab:hasIngredients/vocab:ingredient/rdfs:label ?ingredients }}
         OPTIONAL {{ ?recipe vocab:hasInstructions ?instructions }}
         OPTIONAL {{ ?recipe vocab:hasSteps ?steps }}
+        OPTIONAL {{ ?recipe vocab:hasDietType/rdfs:label ?dietType }}
+        OPTIONAL {{ ?recipe vocab:hasRecordHealth ?recordHealth }}
+        OPTIONAL {{ ?recipe vocab:hasRating ?rating }}
+        OPTIONAL {{ ?recipe vocab:totalLikes ?totalLikes }}
+        OPTIONAL {{ ?recipe vocab:totalSteps ?totalSteps }}
+        OPTIONAL {{ ?recipe vocab:totalIngredients ?totalIngredients }}
+        OPTIONAL {{ ?recipe vocab:hasAuthor/rdfs:label ?author }}
+        OPTIONAL {{ ?recipe vocab:hasTags/rdfs:label ?tags }}
+        OPTIONAL {{ ?recipe vocab:voteCount ?voteCount }}
+        OPTIONAL {{ ?recipe vocab:courseFor/rdfs:label ?courseFor }}
     }}
     """
 
@@ -111,6 +123,16 @@ def recipe_detail_view(request, recipe_name):
                 'category': result.get('category', {}).get('value', ''),
                 'ingredients': {},
                 'instructions': [],
+                'dietType': result.get('dietType', {}).get('value', ''),
+                'recordHealth': result.get('recordHealth', {}).get('value', ''),
+                'rating': result.get('rating', {}).get('value', ''),
+                'totalLikes': result.get('totalLikes', {}).get('value', ''),
+                'totalSteps': result.get('totalSteps', {}).get('value', ''),
+                'totalIngredients': result.get('totalIngredients', {}).get('value', ''),
+                'author': result.get('author', {}).get('value', ''),
+                'tags': {},
+                'voteCount': result.get('voteCount', {}).get('value', ''),
+                'courseFor': result.get('courseFor', {}).get('value', '')
             }
         # Handle ingredients
         if 'ingredients' in result:
@@ -120,6 +142,10 @@ def recipe_detail_view(request, recipe_name):
                 'label': ingredient,
                 'url': ingredient_url
             }
+        # Handle tags
+        if 'tags' in result:
+            tag = result['tags']['value']
+            recipes[recipe_id]['tags'][tag] = tag
         # Handle instructions
         if 'instructions' in result:
             instructions = result['instructions']['value'].split('|')
@@ -127,13 +153,13 @@ def recipe_detail_view(request, recipe_name):
         # Handle steps
         if 'steps' in result:
             steps = result['steps']['value']
-            # Use regex to split steps based on the pattern `1)` or similar
             recipes[recipe_id]['instructions'] = re.split(r'\s*\d+\)\s*', steps)[1:]
 
     # Convert recipes to a list
     recipe_list = []
     for recipe in recipes.values():
-        recipe['ingredients'] = list(recipe['ingredients'].values())  # Convert ingredients back to a list
+        recipe['ingredients'] = list(recipe['ingredients'].values())
+        recipe['tags'] = list(recipe['tags'].values())
         recipe_list.append(recipe)
 
     print(recipe_list[0])
