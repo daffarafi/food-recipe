@@ -37,8 +37,12 @@ class WikidataIngredientService:
                     ?wikidataItem schema:description ?itemDescription .
                     FILTER(LANG(?itemDescription) = "id")
                 }}
+                FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q10715829 . }}
+                FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q11432 . }}
+
             }}
             """
+            print(wikidata_query)
 
             async with session.post(
                 'https://query.wikidata.org/sparql',
@@ -188,8 +192,8 @@ def recipe_detail_view(request, recipe_name):
         recipe['ingredients'] = list(recipe['ingredients'].values())
         recipe['tags'] = list(recipe['tags'].values())
         recipe_list.append(recipe)
-    
-    referer = request.META.get('HTTP_REFERER', '')  
+
+    referer = request.META.get('HTTP_REFERER', '')
 
     context = {
         'recipes': recipe_list,
