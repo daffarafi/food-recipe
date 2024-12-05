@@ -37,14 +37,34 @@ class WikidataIngredientService:
                     ?wikidataItem schema:description ?itemDescription .
                     FILTER(LANG(?itemDescription) = "id")
                 }}
-                FILTER (?wikidataItem = wd:Q283 || (?label != "air"@id && ?label != "air"@en))
-                FILTER (?wikidataItem = wd:Q11002 || (?label != "gula"@id && ?label != "gula"@en))
-                FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q10715829 . }}
-                FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q11432 . }}
 
+                # Subclass filter for food ingredient or carbohydrate
+                OPTIONAL {{
+                    ?wikidataItem wdt:P279* ?superclass .
+                    VALUES ?superclass {{ wd:Q25403900 wd:Q11358 }}
+                }}
+
+                # "Is source of" -> "has use" -> food
+                OPTIONAL {{
+                    ?wikidataItem wdt:P1672 ?source .
+                    ?source wdt:P366 wd:Q2095 .
+                }}
+
+                # partOf (P361) food (Q2095)
+                OPTIONAL {{
+                    ?wikidataItem wdt:P361 wd:Q2095 .
+                }}
+
+                # Ensure at least one condition is satisfied
+                FILTER (
+                    BOUND(?superclass) || 
+                    (BOUND(?source) && ?source != wd:Q10715829) || 
+                    EXISTS {{
+                        ?wikidataItem wdt:P361 wd:Q2095
+                    }}
+                )
             }}
             """
-            print(wikidata_query)
 
             async with session.post(
                 'https://query.wikidata.org/sparql',
