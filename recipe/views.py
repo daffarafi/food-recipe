@@ -38,6 +38,7 @@ class WikidataIngredientService:
                     FILTER(LANG(?itemDescription) = "id")
                 }}
                 FILTER (?wikidataItem = wd:Q283 || (?label != "air"@id && ?label != "air"@en))
+                FILTER (?wikidataItem = wd:Q11002 || (?label != "gula"@id && ?label != "gula"@en))
                 FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q10715829 . }}
                 FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q11432 . }}
 
