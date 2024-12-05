@@ -37,6 +37,7 @@ class WikidataIngredientService:
                     ?wikidataItem schema:description ?itemDescription .
                     FILTER(LANG(?itemDescription) = "id")
                 }}
+                FILTER (?wikidataItem = wd:Q283 || (?label != "air"@id && ?label != "air"@en))
                 FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q10715829 . }}
                 FILTER NOT EXISTS {{ ?wikidataItem wdt:P279 wd:Q11432 . }}
 
